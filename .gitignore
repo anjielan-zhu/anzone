@@ -1,0 +1,23 @@
+# === Android / Gradle (anzone-mdm) ===
+anzone-mdm/.gradle/
+anzone-mdm/build/
+anzone-mdm/app/build/
+anzone-mdm/captures/
+anzone-mdm/local.properties
+anzone-mdm/.idea/
+anzone-mdm/*.iml
+**/build/
+.gradle/
+local.properties
+
+# === Keystores / secrets ===
+*.jks
+*.keystore
+key.properties
+
+# === OS / editor ===
+.DS_Store
+Thumbs.db
+
+# === Claude local state ===
+.claude/
