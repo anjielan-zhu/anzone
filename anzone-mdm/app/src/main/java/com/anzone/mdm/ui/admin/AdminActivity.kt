@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.anzone.mdm.R
 import com.anzone.mdm.AnzoneApp
 import com.anzone.mdm.data.Role
 import com.anzone.mdm.data.db.LogType
@@ -16,6 +18,10 @@ import com.anzone.mdm.ui.kiosk.KioskActivity
 import kotlinx.coroutines.launch
 
 class AdminActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.anzone.mdm.util.LocaleManager.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = AnzoneApp.from(this)
@@ -27,7 +33,11 @@ class AdminActivity : ComponentActivity() {
                 val loginError by vm.loginError.collectAsStateWithLifecycle()
                 when {
                     firstRun -> SetupWizardScreen(onCreate = vm::createAccounts)
-                    !authed -> LoginScreen("Admin login", loginError, vm::login)
+                    !authed -> LoginScreen(
+                        stringResource(R.string.admin_login_title),
+                        loginError?.let { stringResource(R.string.err_bad_credentials) },
+                        vm::login,
+                    )
                     else -> AdminHome(vm, app)
                 }
             }
@@ -44,7 +54,11 @@ class AdminActivity : ComponentActivity() {
         val releaseError by vm.releaseError.collectAsStateWithLifecycle()
         Scaffold(bottomBar = {
             NavigationBar {
-                listOf("Whitelist", "Logs", "Settings").forEachIndexed { i, label ->
+                listOf(
+                    stringResource(R.string.tab_whitelist),
+                    stringResource(R.string.tab_logs),
+                    stringResource(R.string.tab_settings),
+                ).forEachIndexed { i, label ->
                     NavigationBarItem(selected = tab == i, onClick = { tab = i },
                         icon = {}, label = { Text(label) })
                 }
@@ -58,6 +72,11 @@ class AdminActivity : ComponentActivity() {
                     })
                     else -> SettingsScreen(
                         releaseError = releaseError,
+                        currentLang = com.anzone.mdm.util.LocaleManager.getLang(this@AdminActivity),
+                        onLanguageChange = { lang ->
+                            com.anzone.mdm.util.LocaleManager.setLang(this@AdminActivity, lang)
+                            recreate()
+                        },
                         onChangeAdminPw = vm::changeAdminPw,
                         onChangeNormalPw = vm::changeNormalPw,
                         onSwitchToNormal = {

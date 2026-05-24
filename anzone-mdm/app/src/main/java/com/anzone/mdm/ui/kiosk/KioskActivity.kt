@@ -15,10 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
 import com.anzone.mdm.AnzoneApp
+import com.anzone.mdm.R
 import com.anzone.mdm.data.db.LogType
 import com.anzone.mdm.data.db.WhitelistApp
 import com.anzone.mdm.ui.admin.AdminActivity
@@ -26,6 +28,10 @@ import com.anzone.mdm.ui.admin.LoginScreen
 import kotlinx.coroutines.launch
 
 class KioskActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.anzone.mdm.util.LocaleManager.wrap(newBase))
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,28 +42,29 @@ class KioskActivity : ComponentActivity() {
                 var apps by remember { mutableStateOf<List<WhitelistApp>>(emptyList()) }
                 var locked by remember { mutableStateOf(false) }
                 var lockError by remember { mutableStateOf<String?>(null) }
+                val errBadCredentials = stringResource(R.string.err_bad_credentials)
                 LaunchedEffect(Unit) {
                     app.whitelist.observeAll().collect { apps = it }
                 }
                 if (locked) {
-                    LoginScreen(title = "Unlock (enter user password)", error = lockError, onSubmit = { user, pw ->
+                    LoginScreen(title = stringResource(R.string.unlock_title), error = lockError, onSubmit = { user, pw ->
                         lifecycleScope.launch {
                             if (app.auth.verifyNormal(user, pw)) {
                                 locked = false; lockError = null
                                 app.logs.record(LogType.ROLE_SWITCH, null, "normal user unlocked")
                             } else {
-                                lockError = "Wrong username or password"
+                                lockError = errBadCredentials
                                 app.logs.record(LogType.LOGIN_FAILED, null, "unlock failed")
                             }
                         }
                     })
                 } else {
                     Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent, topBar = {
-                        TopAppBar(title = { Text("anzone") }, actions = {
-                            TextButton(onClick = { locked = true }) { Text("Lock") }
+                        TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+                            TextButton(onClick = { locked = true }) { Text(stringResource(R.string.lock)) }
                             TextButton(onClick = {
                                 startActivity(Intent(this@KioskActivity, AdminActivity::class.java))
-                            }) { Text("Admin") }
+                            }) { Text(stringResource(R.string.admin)) }
                         })
                     }) { pad ->
                         LazyVerticalGrid(
