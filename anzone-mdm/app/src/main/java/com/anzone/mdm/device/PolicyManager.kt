@@ -18,6 +18,8 @@ class PolicyManager(private val context: Context) {
     fun applyManagement(lockTaskPackages: Array<String>) {
         if (!isDeviceOwner()) return
         dpm.setLockTaskPackages(admin, lockTaskPackages + context.packageName)
+        dpm.setLockTaskFeatures(admin, android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME
+            or android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD)
         dpm.addUserRestriction(admin, UserManager.DISALLOW_INSTALL_APPS)
         dpm.addUserRestriction(admin, UserManager.DISALLOW_UNINSTALL_APPS)
         dpm.addUserRestriction(admin, UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES)
