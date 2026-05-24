@@ -21,3 +21,8 @@ Thumbs.db
 
 # === Claude local state ===
 .claude/
+
+# .NET
+anzone-windows/**/bin/
+anzone-windows/**/obj/
+anzone-windows/publish/
