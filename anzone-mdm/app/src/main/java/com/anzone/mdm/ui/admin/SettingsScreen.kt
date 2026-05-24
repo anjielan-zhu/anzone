@@ -8,10 +8,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(
+    releaseError: String?,
     onChangeAdminPw: (String) -> Unit,
     onChangeNormalPw: (String) -> Unit,
     onSwitchToNormal: () -> Unit,
     onReleaseManagement: (String) -> Unit,
+    onReleaseDialogDismiss: () -> Unit,
 ) {
     var adminPw by remember { mutableStateOf("") }
     var normalPw by remember { mutableStateOf("") }
@@ -42,21 +44,24 @@ fun SettingsScreen(
 
     if (showRelease) {
         AlertDialog(
-            onDismissRequest = { showRelease = false },
+            onDismissRequest = { showRelease = false; confirmPw = ""; onReleaseDialogDismiss() },
             title = { Text("Confirm release management") },
             text = {
                 Column {
                     Text("After release the device returns to normal and apps can be freely installed/removed. Re-enabling management requires re-provisioning. Re-enter the admin password to confirm.")
                     OutlinedTextField(confirmPw, { confirmPw = it },
                         label = { Text("Admin password") }, singleLine = true)
+                    releaseError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { onReleaseManagement(confirmPw); showRelease = false }) {
+                TextButton(onClick = { onReleaseManagement(confirmPw) }) {
                     Text("Confirm release")
                 }
             },
-            dismissButton = { TextButton(onClick = { showRelease = false }) { Text("Cancel") } }
+            dismissButton = {
+                TextButton(onClick = { showRelease = false; confirmPw = ""; onReleaseDialogDismiss() }) { Text("Cancel") }
+            }
         )
     }
 }

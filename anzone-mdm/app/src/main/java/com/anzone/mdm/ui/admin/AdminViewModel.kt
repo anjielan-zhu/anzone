@@ -20,6 +20,20 @@ class AdminViewModel(private val app: AnzoneApp) : ViewModel() {
     val authed: kotlinx.coroutines.flow.StateFlow<Boolean> = _authed
     private val _loginError = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
     val loginError: kotlinx.coroutines.flow.StateFlow<String?> = _loginError
+    private val _releaseError = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+    val releaseError: kotlinx.coroutines.flow.StateFlow<String?> = _releaseError
+    fun clearReleaseError() { _releaseError.value = null }
+    fun attemptRelease(pw: String, onSuccess: () -> Unit) = viewModelScope.launch {
+        if (app.auth.verifyAdmin(app.auth.adminUsername(), pw)) {
+            app.policy.releaseManagement()
+            app.logs.record(LogType.MANAGEMENT_EXIT, null, "release management")
+            app.policy.clearDeviceOwner()
+            onSuccess()
+        } else {
+            _releaseError.value = "Wrong password"
+            app.logs.record(LogType.LOGIN_FAILED, null, "release password failed")
+        }
+    }
 
     init { viewModelScope.launch { _firstRun.value = app.auth.isFirstRun() } }
 

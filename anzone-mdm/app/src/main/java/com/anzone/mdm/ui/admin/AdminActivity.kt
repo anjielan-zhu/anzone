@@ -40,6 +40,8 @@ class AdminActivity : ComponentActivity() {
         var tab by remember { mutableIntStateOf(0) }
         val whitelist by vm.whitelist.collectAsStateWithLifecycle()
         val logs by vm.logs.collectAsStateWithLifecycle()
+        val installed = remember { vm.installedApps() }
+        val releaseError by vm.releaseError.collectAsStateWithLifecycle()
         Scaffold(bottomBar = {
             NavigationBar {
                 listOf("Whitelist", "Logs", "Settings").forEachIndexed { i, label ->
@@ -50,11 +52,12 @@ class AdminActivity : ComponentActivity() {
         }) { pad ->
             Surface(Modifier.padding(pad)) {
                 when (tab) {
-                    0 -> WhitelistScreen(whitelist, vm.installedApps(), vm::addApp) { vm.removeApp(it) }
+                    0 -> WhitelistScreen(whitelist, installed, vm::addApp) { vm.removeApp(it) }
                     1 -> LogsScreen(logs, onClear = vm::clearLogs, onExport = {
                         scope.launch { android.util.Log.i("anzone-export", vm.exportLogs()) }
                     })
                     else -> SettingsScreen(
+                        releaseError = releaseError,
                         onChangeAdminPw = vm::changeAdminPw,
                         onChangeNormalPw = vm::changeNormalPw,
                         onSwitchToNormal = {
@@ -63,16 +66,8 @@ class AdminActivity : ComponentActivity() {
                             startActivity(Intent(this@AdminActivity, KioskActivity::class.java))
                             finish()
                         },
-                        onReleaseManagement = { pw ->
-                            scope.launch {
-                                if (app.auth.verifyAdmin(app.auth.adminUsername(), pw)) {
-                                    app.policy.releaseManagement()
-                                    app.logs.record(LogType.MANAGEMENT_EXIT, null, "release management")
-                                    app.policy.clearDeviceOwner()
-                                    finishAffinity()
-                                }
-                            }
-                        }
+                        onReleaseManagement = { pw -> vm.attemptRelease(pw) { finishAffinity() } },
+                        onReleaseDialogDismiss = vm::clearReleaseError,
                     )
                 }
             }
