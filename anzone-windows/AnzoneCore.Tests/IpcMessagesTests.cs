@@ -25,7 +25,7 @@ public class IpcMessagesTests
 
     [Fact] public void ErrorResponse()
     {
-        var back = IpcCodec.DeserializeResponse(IpcCodec.Serialize(IpcResponse.Error("bad")));
+        var back = IpcCodec.DeserializeResponse(IpcCodec.Serialize(IpcResponse.Fail("bad")));
         Assert.False(back.Success);
         Assert.Equal("bad", back.Error);
     }
