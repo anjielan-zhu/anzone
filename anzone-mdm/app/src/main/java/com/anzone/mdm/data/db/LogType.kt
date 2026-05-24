@@ -1,0 +1,6 @@
+package com.anzone.mdm.data.db
+
+enum class LogType {
+    APP_LAUNCH, BLOCK_INSTALL, ADMIN_LOGIN, LOGIN_FAILED,
+    WHITELIST_CHANGE, MANAGEMENT_EXIT, ROLE_SWITCH, BOOT
+}
