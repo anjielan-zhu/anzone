@@ -53,4 +53,11 @@ public class EnforcementDeciderTests
         var d = Make(false, @"C:\Program Files\Foo\foo.exe");
         Assert.Equal(EnforcementAction.BlockProcess, d.Decide(P(@"C:\Program Files\Bar\bar.exe")));
     }
+
+    [Fact] public void WindowsSetupComponentAllowedWhenEnforcing()
+    {
+        var d = Make(false);
+        // an in-box OS component matching the installer heuristic but living under C:\Windows must NOT be blocked
+        Assert.Equal(EnforcementAction.Allow, d.Decide(P(@"C:\Windows\System32\SetupHost.exe")));
+    }
 }

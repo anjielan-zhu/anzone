@@ -14,8 +14,6 @@ public class EnforcementDecider
           "wininit.exe", "smss.exe", "explorer.exe", "dwm.exe", "fontdrvhost.exe",
           "anzoneservice.exe", "anzonetray.exe" };
 
-    private static readonly string[] InstallerNames = { "msiexec.exe" };
-
     private readonly HashSet<string> _whitelist;   // normalized paths
     private readonly bool _paused;
 
@@ -30,17 +28,15 @@ public class EnforcementDecider
         var norm = PathNormalizer.Normalize(p.ImagePath);
         var name = Path.GetFileName(norm);
 
-        if (CriticalNames.Contains(name)) return EnforcementAction.Allow;        // (1)
-        if (_paused) return EnforcementAction.Allow;                             // (2)
-        if (IsInstaller(name)) return EnforcementAction.BlockInstaller;          // (3)
-        if (PathNormalizer.IsUnderWindows(norm)) return EnforcementAction.Allow; // (4)
-        if (_whitelist.Contains(norm)) return EnforcementAction.Allow;           // (5)
-        return EnforcementAction.BlockProcess;                                   // (6)
+        if (CriticalNames.Contains(name)) return EnforcementAction.Allow;            // (1)
+        if (_paused) return EnforcementAction.Allow;                                 // (2)
+        if (name == "msiexec.exe") return EnforcementAction.BlockInstaller;          // (3) block installer engine even in System32
+        if (PathNormalizer.IsUnderWindows(norm)) return EnforcementAction.Allow;     // (4) other OS components OK
+        if (_whitelist.Contains(norm)) return EnforcementAction.Allow;               // (5)
+        if (IsInstallerHeuristic(name)) return EnforcementAction.BlockInstaller;     // (6) setup*/install* outside C:\Windows
+        return EnforcementAction.BlockProcess;                                       // (7)
     }
 
-    private static bool IsInstaller(string fileName)
-    {
-        if (InstallerNames.Contains(fileName)) return true;
-        return fileName.StartsWith("setup") || fileName.Contains("install");
-    }
+    private static bool IsInstallerHeuristic(string fileName) =>
+        fileName.StartsWith("setup") || fileName.Contains("install");
 }

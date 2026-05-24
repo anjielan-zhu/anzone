@@ -29,9 +29,16 @@ public class CommandHandler
                 _logs.Record(LogType.LoginFailed, null, "login failed");
                 return IpcResponse.Fail("invalid credentials");
 
+            case "SetupAdmin":
+                if (!_auth.IsFirstRun()) return IpcResponse.Fail("already configured");
+                _auth.SetAdminPassword(req.Args.GetValueOrDefault("password", ""));
+                _logs.Record(LogType.AdminLogin, null, "initial admin setup");
+                return IpcResponse.Ok(_tokens.Issue());
+
             case "GetStatus":
                 return IpcResponse.Ok(JsonSerializer.Serialize(new {
-                    paused = _config.Paused, whitelistCount = _whitelist.GetAll().Count }));
+                    paused = _config.Paused, whitelistCount = _whitelist.GetAll().Count,
+                    firstRun = _auth.IsFirstRun() }));
 
             case "ListWhitelist":
                 return IpcResponse.Ok(JsonSerializer.Serialize(_whitelist.GetAll()));

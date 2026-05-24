@@ -42,4 +42,27 @@ public class CommandHandlerTests : System.IDisposable
 
     [Fact] public void StatusNeedsNoToken()
         => Assert.True(_h.Handle(Req("GetStatus")).Success);
+
+    [Fact] public void SetupAdminFailsWhenAlreadyConfigured()
+        => Assert.False(_h.Handle(Req("SetupAdmin", null, new(){{"password","x"}})).Success);
+
+    [Fact] public void SetupAdminSucceedsOnFreshFirstRun()
+    {
+        var db2 = Path.Combine(Path.GetTempPath(), $"h2_{System.Guid.NewGuid():N}.db");
+        var cfg2 = Path.Combine(Path.GetTempPath(), $"h2_{System.Guid.NewGuid():N}.json");
+        bool success; string? payload;
+        using (var conn2 = new AnzoneDb($"Data Source={db2}"))
+        {
+            conn2.EnsureCreated();
+            var freshAuth = new AuthService(new ConfigStore(cfg2)); // no password set -> first run
+            var h2 = new CommandHandler(new WhitelistRepository(conn2), new LogRepository(conn2),
+                                        freshAuth, new ConfigStore(cfg2), new SessionTokens());
+            var r = h2.Handle(Req("SetupAdmin", null, new(){{"password","newpw"}}));
+            success = r.Success;
+            payload = r.Payload;
+        } // conn2 disposed here before file deletion
+        Assert.True(success);
+        Assert.NotNull(payload); // a session token was issued
+        File.Delete(db2); if (File.Exists(cfg2)) File.Delete(cfg2);
+    }
 }
