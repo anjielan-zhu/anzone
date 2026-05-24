@@ -70,8 +70,10 @@ class AdminActivity : ComponentActivity() {
                     1 -> LogsScreen(logs, onClear = vm::clearLogs, onExport = {
                         scope.launch { android.util.Log.i("anzone-export", vm.exportLogs()) }
                     })
-                    else -> SettingsScreen(
-                        releaseError = releaseError,
+                    else -> {
+                        val localizedReleaseError = releaseError?.let { stringResource(R.string.err_wrong_password) }
+                        SettingsScreen(
+                        releaseError = localizedReleaseError,
                         currentLang = com.anzone.mdm.util.LocaleManager.getLang(this@AdminActivity),
                         onLanguageChange = { lang ->
                             com.anzone.mdm.util.LocaleManager.setLang(this@AdminActivity, lang)
@@ -87,7 +89,8 @@ class AdminActivity : ComponentActivity() {
                         },
                         onReleaseManagement = { pw -> vm.attemptRelease(pw) { finishAffinity() } },
                         onReleaseDialogDismiss = vm::clearReleaseError,
-                    )
+                        )
+                    }
                 }
             }
         }
