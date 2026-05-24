@@ -14,9 +14,9 @@ public class WhitelistForm : Form
     public WhitelistForm(PipeClient client, string token)
     {
         _client = client; _token = token;
-        Text = "Whitelist"; Width = 520; Height = 420;
-        var add = new Button { Text = "Add exe", Dock = DockStyle.Bottom };
-        var del = new Button { Text = "Remove selected", Dock = DockStyle.Bottom };
+        Text = L.T("whitelist_title"); Width = 520; Height = 420;
+        var add = new Button { Text = L.T("add_exe"), Dock = DockStyle.Bottom };
+        var del = new Button { Text = L.T("remove_sel"), Dock = DockStyle.Bottom };
         add.Click += (_, _) => AddExe();
         del.Click += (_, _) => RemoveSelected();
         Controls.Add(_list); Controls.Add(del); Controls.Add(add);
@@ -34,7 +34,7 @@ public class WhitelistForm : Form
 
     private void AddExe()
     {
-        using var dlg = new OpenFileDialog { Filter = "Executable|*.exe" };
+        using var dlg = new OpenFileDialog { Filter = L.T("file_filter") };
         if (dlg.ShowDialog() != DialogResult.OK) return;
         _client.Send(new IpcRequest("AddWhitelist", _token,
             new Dictionary<string,string>{{"path", dlg.FileName},{"name", System.IO.Path.GetFileName(dlg.FileName)}}));

@@ -11,16 +11,16 @@ public class SetupForm : Form
 
     public SetupForm(PipeClient client)
     {
-        Text = "anzone initial setup"; Width = 360; Height = 160;
-        var btn = new Button { Text = "Create admin password", Dock = DockStyle.Bottom };
-        var lbl = new Label { Text = "First-time setup: set the admin password.", Dock = DockStyle.Bottom, Height = 24 };
+        Text = L.T("setup_title"); Width = 360; Height = 160;
+        var btn = new Button { Text = L.T("setup_btn"), Dock = DockStyle.Bottom };
+        var lbl = new Label { Text = L.T("setup_hint"), Dock = DockStyle.Bottom, Height = 24 };
         btn.Click += (_, _) =>
         {
-            if (string.IsNullOrWhiteSpace(_pw.Text)) { MessageBox.Show("Password cannot be empty"); return; }
+            if (string.IsNullOrWhiteSpace(_pw.Text)) { MessageBox.Show(L.T("pw_empty")); return; }
             var r = client.Send(new IpcRequest("SetupAdmin", null,
                 new Dictionary<string,string>{{"password", _pw.Text}}));
             if (r.Success) { Token = r.Payload; DialogResult = DialogResult.OK; Close(); }
-            else MessageBox.Show(r.Error ?? "setup failed");
+            else MessageBox.Show(r.Error ?? L.T("setup_fail"));
         };
         Controls.Add(_pw); Controls.Add(lbl); Controls.Add(btn);
     }
