@@ -41,23 +41,55 @@ class KioskActivity : ComponentActivity() {
             MaterialTheme {
                 var apps by remember { mutableStateOf<List<WhitelistApp>>(emptyList()) }
                 var locked by remember { mutableStateOf(false) }
+                var exitMode by remember { mutableStateOf(false) }
                 var lockError by remember { mutableStateOf<String?>(null) }
                 val errBadCredentials = stringResource(R.string.err_bad_credentials)
                 LaunchedEffect(Unit) {
                     app.whitelist.observeAll().collect { apps = it }
                 }
                 if (locked) {
-                    LoginScreen(title = stringResource(R.string.unlock_title), error = lockError, onSubmit = { user, pw ->
-                        lifecycleScope.launch {
-                            if (app.auth.verifyNormal(user, pw)) {
-                                locked = false; lockError = null
-                                app.logs.record(LogType.ROLE_SWITCH, null, "normal user unlocked")
-                            } else {
-                                lockError = errBadCredentials
-                                app.logs.record(LogType.LOGIN_FAILED, null, "unlock failed")
-                            }
+                    Box(Modifier.fillMaxSize()) {
+                        if (exitMode) {
+                            LoginScreen(
+                                title = stringResource(R.string.exit_admin_title),
+                                error = lockError,
+                                onSubmit = { user, pw ->
+                                    lifecycleScope.launch {
+                                        if (app.auth.verifyAdmin(user, pw)) {
+                                            performExit(app)
+                                        } else {
+                                            lockError = errBadCredentials
+                                            app.logs.record(LogType.LOGIN_FAILED, null, "exit admin auth failed")
+                                        }
+                                    }
+                                }
+                            )
+                            TextButton(
+                                onClick = { exitMode = false; lockError = null },
+                                modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+                            ) { Text(stringResource(R.string.cancel)) }
+                        } else {
+                            LoginScreen(
+                                title = stringResource(R.string.unlock_title),
+                                error = lockError,
+                                onSubmit = { user, pw ->
+                                    lifecycleScope.launch {
+                                        if (app.auth.verifyNormal(user, pw)) {
+                                            locked = false; lockError = null
+                                            app.logs.record(LogType.ROLE_SWITCH, null, "normal user unlocked")
+                                        } else {
+                                            lockError = errBadCredentials
+                                            app.logs.record(LogType.LOGIN_FAILED, null, "unlock failed")
+                                        }
+                                    }
+                                }
+                            )
+                            TextButton(
+                                onClick = { exitMode = true; lockError = null },
+                                modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+                            ) { Text(stringResource(R.string.exit_management)) }
                         }
-                    })
+                    }
                 } else {
                     Scaffold(containerColor = androidx.compose.ui.graphics.Color.Transparent, topBar = {
                         TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
@@ -118,6 +150,22 @@ class KioskActivity : ComponentActivity() {
                 app.whitelist.remove(pkg)
                 app.logs.record(LogType.WHITELIST_CHANGE, pkg, "app uninstalled, auto-removed")
             }
+        }
+    }
+
+    private fun performExit(app: AnzoneApp) {
+        lifecycleScope.launch {
+            app.logs.record(LogType.MANAGEMENT_EXIT, null, "admin exited management")
+            app.policy.releaseManagement()
+            app.policy.clearDeviceOwner()
+            runCatching { stopLockTask() }
+            runCatching {
+                startActivity(Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })
+            }
+            finishAffinity()
         }
     }
 

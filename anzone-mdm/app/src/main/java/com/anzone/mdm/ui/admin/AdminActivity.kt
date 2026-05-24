@@ -87,7 +87,16 @@ class AdminActivity : ComponentActivity() {
                             startActivity(Intent(this@AdminActivity, KioskActivity::class.java))
                             finish()
                         },
-                        onReleaseManagement = { pw -> vm.attemptRelease(pw) { finishAffinity() } },
+                        onReleaseManagement = { pw -> vm.attemptRelease(pw) {
+                            runCatching { stopLockTask() }
+                            runCatching {
+                                startActivity(Intent(Intent.ACTION_MAIN).apply {
+                                    addCategory(Intent.CATEGORY_HOME)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                })
+                            }
+                            finishAffinity()
+                        } },
                         onReleaseDialogDismiss = vm::clearReleaseError,
                         )
                     }
