@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Windows.Forms;
 using AnzoneCore.Ipc;
 
@@ -21,6 +23,7 @@ static class Program
             ContextMenuStrip = menu
         };
 
+        menu.Items.Add("Initial setup", null, (_, _) => RunSetup());
         menu.Items.Add("Admin login", null, (_, _) =>
         {
             using var f = new LoginForm(Client);
@@ -32,7 +35,27 @@ static class Program
         menu.Items.Add("Resume enforcement", null, (_, _) => { if (RequireLogin()) Client.Send(new IpcRequest("ResumeEnforcement", _token, new())); });
         menu.Items.Add("Exit tray", null, (_, _) => { icon.Visible = false; Application.Exit(); });
 
+        if (IsFirstRun()) RunSetup();
+
         Application.Run();
+    }
+
+    private static bool IsFirstRun()
+    {
+        var r = Client.Send(new IpcRequest("GetStatus", null, new()));
+        if (!r.Success || r.Payload is null) return false;
+        try
+        {
+            using var doc = JsonDocument.Parse(r.Payload);
+            return doc.RootElement.TryGetProperty("firstRun", out var fr) && fr.GetBoolean();
+        }
+        catch { return false; }
+    }
+
+    private static void RunSetup()
+    {
+        using var f = new SetupForm(Client);
+        if (f.ShowDialog() == DialogResult.OK) _token = f.Token;
     }
 
     private static bool RequireLogin()

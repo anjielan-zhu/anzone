@@ -36,6 +36,18 @@ public class EnforcementWorker : BackgroundService
         _logs.Record(LogType.ServiceStart, null, "service start");
 
         _watcher.ProcessStarted += OnProcessStarted;
+        _watcher.StoppedUnexpectedly += () =>
+        {
+            try
+            {
+                _logs.Record(LogType.ServiceStart, null, "WMI watcher stopped unexpectedly; rebuilding");
+                _watcher.Start();
+            }
+            catch (Exception ex)
+            {
+                _logs.Record(LogType.ServiceStop, null, $"WMI watcher rebuild failed: {ex.Message}");
+            }
+        };
         _watcher.Start();
 
         try { await _pipe.RunAsync(stoppingToken); }

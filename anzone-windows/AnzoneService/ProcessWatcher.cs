@@ -6,7 +6,9 @@ namespace AnzoneService;
 public class ProcessWatcher : IDisposable
 {
     private ManagementEventWatcher? _watcher;
-    public event Action<int, string>? ProcessStarted;  // pid, imagePath
+    private bool _disposed;
+    public event Action<int, string>? ProcessStarted;
+    public event Action? StoppedUnexpectedly;
 
     public void Start()
     {
@@ -22,6 +24,10 @@ public class ProcessWatcher : IDisposable
             }
             catch { /* per-event failure must not kill the watcher */ }
         };
+        _watcher.Stopped += (_, _) =>
+        {
+            if (!_disposed) StoppedUnexpectedly?.Invoke();
+        };
         _watcher.Start();
     }
 
@@ -31,5 +37,10 @@ public class ProcessWatcher : IDisposable
         catch { return null; }
     }
 
-    public void Dispose() { _watcher?.Stop(); _watcher?.Dispose(); }
+    public void Dispose()
+    {
+        _disposed = true;
+        _watcher?.Stop();
+        _watcher?.Dispose();
+    }
 }
