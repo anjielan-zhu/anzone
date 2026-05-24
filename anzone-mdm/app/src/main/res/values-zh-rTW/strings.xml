@@ -13,6 +13,7 @@
     <string name="login">登入</string>
     <string name="admin_login_title">管理員登入</string>
     <string name="err_bad_credentials">使用者名稱或密碼錯誤</string>
+    <string name="err_wrong_password">密碼錯誤</string>
     <string name="unlock_title">解鎖（輸入使用者密碼）</string>
     <string name="lock">鎖定</string>
     <string name="admin">管理員</string>
