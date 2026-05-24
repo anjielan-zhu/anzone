@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">anzone</string>
+    <string name="setup_admin_title">建立管理員帳號</string>
+    <string name="setup_user_title">建立普通使用者帳號</string>
+    <string name="username">使用者名稱</string>
+    <string name="password">密碼</string>
+    <string name="confirm_password">確認密碼</string>
+    <string name="err_empty">使用者名稱和密碼不能為空</string>
+    <string name="err_pw_mismatch">兩次密碼不一致</string>
+    <string name="next">下一步</string>
+    <string name="finish">完成</string>
+    <string name="login">登入</string>
+    <string name="admin_login_title">管理員登入</string>
+    <string name="err_bad_credentials">使用者名稱或密碼錯誤</string>
+    <string name="unlock_title">解鎖（輸入使用者密碼）</string>
+    <string name="lock">鎖定</string>
+    <string name="admin">管理員</string>
+    <string name="tab_whitelist">白名單</string>
+    <string name="tab_logs">日誌</string>
+    <string name="tab_settings">設定</string>
+    <string name="whitelist_title">白名單（%1$d）</string>
+    <string name="add">新增</string>
+    <string name="remove">刪除</string>
+    <string name="select_installed_app">選擇已安裝應用</string>
+    <string name="close">關閉</string>
+    <string name="logs_title">日誌（%1$d）</string>
+    <string name="export">匯出</string>
+    <string name="clear">清空</string>
+    <string name="change_admin_pw">修改管理員密碼</string>
+    <string name="new_password">新密碼</string>
+    <string name="update_admin_pw">更新管理員密碼</string>
+    <string name="change_user_pw">修改普通使用者密碼</string>
+    <string name="update_user_pw">更新普通使用者密碼</string>
+    <string name="switch_to_user">切換普通使用者（進入 Kiosk）</string>
+    <string name="release_mgmt">解除管控（退出）</string>
+    <string name="confirm_release_title">確認解除管控</string>
+    <string name="release_warning">解除後裝置恢復正常，可自由安裝/移除軟體。重新管控需重新啟用。請再次輸入管理員密碼確認。</string>
+    <string name="admin_password">管理員密碼</string>
+    <string name="confirm_release">確認解除</string>
+    <string name="cancel">取消</string>
+    <string name="language">語言</string>
+    <string name="lang_system">跟隨系統</string>
+    <string name="lang_hans">简体中文</string>
+    <string name="lang_hant">繁體中文</string>
+</resources>
